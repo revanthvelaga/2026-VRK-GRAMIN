@@ -1,0 +1,5 @@
+from pathlib import Path
+p=Path('dist/index.html');s=p.read_text(encoding='utf8');s=s.replace('<script src="app.js"></script>','<script src="app.js"></script><script src="places.js"></script>');p.write_text(s,encoding='utf8')
+p=Path('dist/style.css');s=p.read_text(encoding='utf8');s+='''
+.place-field{position:relative}.place-options{position:absolute;left:0;right:0;top:94px;z-index:10;max-height:300px;overflow:auto;background:white;border:1px solid #b1c2b4;border-radius:10px;box-shadow:0 12px 28px #123d3224}.place-options [role=option]{padding:14px;border-bottom:1px solid #dce4dd;cursor:pointer;min-height:56px}.place-options [role=option]:hover,.place-options [aria-selected=true]{background:#edf3e8}.place-options strong,.place-options small{display:block}.place-options small{font-size:13px;line-height:1.6;margin-top:3px;font-weight:400}.place-help{font-size:13px;font-weight:400;line-height:1.7;margin:8px 0}.place-credit{font-size:12px;line-height:1.6;font-weight:400;display:block}.place-credit a{color:#246353}.place-field>label{display:block}
+''';p.write_text(s,encoding='utf8')

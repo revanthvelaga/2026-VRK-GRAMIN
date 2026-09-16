@@ -1,0 +1,10 @@
+data/
+node_modules/
+.sites-runtime/
+.pnpm-store/
+outputs/
+dist/server/
+dist/.openai/
+.release/
+*.tar.gz
+.env*

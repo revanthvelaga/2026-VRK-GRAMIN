@@ -1,0 +1,28 @@
+/* Village autocomplete uses the existing booking draft and shared server. */
+(()=>{
+function attach(){
+ const input=document.querySelector('input[name=village]');if(!input||input.dataset.placesReady)return;
+ input.dataset.placesReady='true';input.removeAttribute('list');input.autocomplete='off';
+ const original=input.closest('.field'),field=document.createElement('div');field.className='field place-field';
+ const label=document.createElement('label');label.htmlFor='village-search';label.textContent=original.firstChild.textContent;
+ input.id='village-search';input.setAttribute('role','combobox');input.setAttribute('aria-autocomplete','list');input.setAttribute('aria-controls','village-options');input.setAttribute('aria-expanded','false');input.setAttribute('aria-describedby','village-search-help');
+ original.replaceWith(field);field.append(label,input);
+ const list=document.createElement('div');list.id='village-options';list.className='place-options';list.setAttribute('role','listbox');list.setAttribute('aria-label',t('Village suggestions','గ్రామ సూచనలు'));list.hidden=true;
+ const help=document.createElement('div');help.id='village-search-help';help.className='place-help';help.setAttribute('role','status');help.textContent=t('Type at least 3 letters to search maps, for example G Kod.','మ్యాప్‌లో వెతకడానికి కనీసం 3 అక్షరాలు రాయండి.');
+ const credit=document.createElement('small');credit.className='place-credit';credit.innerHTML='Map search: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a> via <a href="https://photon.komoot.io" target="_blank" rel="noopener">Photon</a>. Only the village search text is sent. Coverage requires owner confirmation.';
+ field.append(list,help,credit);
+ let timer,controller,results=[],active=-1,version=0;
+ function close(){list.hidden=true;input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');}
+ function save(){try{localStorage.setItem('gramin-draft',JSON.stringify(draft));}catch{}}
+ function choose(index){const place=results[index];if(!place)return;version++;clearTimeout(timer);controller?.abort();input.value=place.name;draft.village=place.name;draft.place=place;const pin=document.querySelector('input[name=pin]');if(pin){pin.value=place.postcode;draft.pin=place.postcode;pin.dataset.mapFilled=place.postcode?'true':'';}save();close();help.textContent=place.label+(place.postcode?t(' · PIN filled from maps; please check it.',' · పిన్ కోడ్ తనిఖీ చేయండి.'):t(' · PIN not provided by maps; please enter it below.',' · పిన్ కోడ్ క్రింద రాయండి.'));input.focus();}
+ function highlight(){[...list.children].forEach((el,i)=>el.setAttribute('aria-selected',String(i===active)));if(active>=0){input.setAttribute('aria-activedescendant',`village-option-${active}`);list.children[active]?.scrollIntoView({block:'nearest'});}else input.removeAttribute('aria-activedescendant');}
+ input.addEventListener('input',()=>{version++;const current=version;clearTimeout(timer);controller?.abort();delete draft.place;const pin=document.querySelector('input[name=pin]');if(pin?.dataset.mapFilled==='true'){pin.value='';draft.pin='';pin.dataset.mapFilled='';}draft.village=input.value;save();close();const q=input.value.trim();if(q.length<3){help.textContent=t('Type at least 3 letters to search maps.','కనీసం 3 అక్షరాలు రాయండి.');return;}help.textContent=t('Searching maps…','మ్యాప్‌లో వెతుకుతోంది…');timer=setTimeout(async()=>{
+ controller=new AbortController();try{const r=await fetch('/api/places?q='+encodeURIComponent(q),{headers:{Authorization:'Bearer '+token()},signal:controller.signal});const body=await r.json();if(!r.ok)throw Error(body.error);if(current!==version||!input.isConnected)return;results=body.places;active=-1;list.innerHTML=results.map((p,i)=>`<div role="option" aria-selected="false" id="village-option-${i}" data-place-index="${i}"><strong>${esc(p.name)}</strong><small>${esc(p.label)}${p.postcode?' · '+esc(p.postcode):''}</small></div>`).join('');list.hidden=!results.length;input.setAttribute('aria-expanded',String(!!results.length));help.textContent=results.length?t('Choose the correct village. You can also enter it manually.','సరైన గ్రామాన్ని ఎంచుకోండి.'):t('No match found. Try the full village name or enter it manually.','గ్రామం దొరకలేదు. పూర్తి పేరు రాయండి.');}catch(e){if(e.name==='AbortError'||current!==version||!input.isConnected)return;close();help.textContent=t('Map search is unavailable. Enter your village and PIN manually, or type again to retry.','మ్యాప్ అందుబాటులో లేదు. గ్రామం, పిన్ కోడ్ రాయండి.');}
+ },600);});
+ list.addEventListener('mousedown',e=>e.preventDefault());list.addEventListener('click',e=>{const item=e.target.closest('[data-place-index]');if(item)choose(Number(item.dataset.placeIndex));});
+ input.addEventListener('keydown',e=>{if(e.key==='Escape'){version++;clearTimeout(timer);controller?.abort();close();return;}if(list.hidden)return;if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();active=e.key==='ArrowDown'?Math.min(results.length-1,active+1):Math.max(0,active-1);highlight();}if(e.key==='Enter'&&active>=0){e.preventDefault();choose(active);}});
+ input.addEventListener('blur',()=>{version++;clearTimeout(timer);controller?.abort();setTimeout(close,150);});
+ if(draft.place&&draft.village===draft.place.name)help.textContent=draft.place.label;
+}
+new MutationObserver(attach).observe(document.querySelector('#app'),{childList:true,subtree:true});attach();
+})();

@@ -1,0 +1,78 @@
+{
+  "title": "Gramin launch",
+  "updated": "Secure role checks passed; preparing owner-only hosted release",
+  "tasks": [
+    {
+      "id": "prototype",
+      "title": "Customer, technician and owner prototype",
+      "status": "done",
+      "detail": "Booking, dispatch, estimate approval and completion tested."
+    },
+    {
+      "id": "villages",
+      "title": "Live village suggestions",
+      "status": "done",
+      "detail": "G Kod to G.Koduru tested; missing PIN remains manual."
+    },
+    {
+      "id": "documents",
+      "title": "Architecture and launch requirements",
+      "status": "done",
+      "detail": "Illustrated PDF and editable checklist saved."
+    },
+    {
+      "id": "logo",
+      "title": "Create and display the Gramin logo",
+      "status": "done",
+      "detail": "New logo is visible in the prototype header."
+    },
+    {
+      "id": "schema",
+      "title": "Design the hosted database schema",
+      "status": "done",
+      "detail": "Bookings, technicians, audit history and request-limit tables added."
+    },
+    {
+      "id": "accounts",
+      "title": "Secure accounts and role permissions",
+      "status": "done",
+      "detail": "Hosted sign-in and owner/customer/technician permissions implemented; isolation and revocation tests passed. Hosted sign-in verification remains part of release checks."
+    },
+    {
+      "id": "storage",
+      "title": "Hosted storage and database migrations",
+      "status": "active",
+      "detail": "Migration generated and tested against SQLite; hosted database activation is next."
+    },
+    {
+      "id": "operations",
+      "title": "Prepare real booking operations",
+      "status": "active",
+      "detail": "Real dates, owner setup and cash confirmation implemented. Actual service details and technician accounts still required."
+    },
+    {
+      "id": "security",
+      "title": "Security and access-isolation checks",
+      "status": "active",
+      "detail": "Role isolation, same-origin writes, transaction guards and retry checks passed. Hosting protections still to verify."
+    },
+    {
+      "id": "recovery",
+      "title": "Backups and monitoring",
+      "status": "pending",
+      "detail": "Recovery and operational checks before real customer use."
+    },
+    {
+      "id": "release",
+      "title": "Release tests",
+      "status": "pending",
+      "detail": "Check customer and staff workflows on desktop and mobile."
+    },
+    {
+      "id": "deploy",
+      "title": "Deploy and verify the launch",
+      "status": "pending",
+      "detail": "No live release has been published."
+    }
+  ]
+}
