@@ -48,6 +48,21 @@ test('hosted account roles, isolation, revocation and full approved cash workflo
  assert.equal((await h.request('tech@example.test')).data.bookings.length,0);
  h.DB.raw.close();
 });
+test('owner edits technician identity without duplication and disabled samples cannot sign in as staff',async()=>{
+ const h=harness(),act=(email,input)=>h.request(email,'/api/actions','technician',input);
+ const initial={name:'Sample Ravi',email:'ravi.sample@example.invalid',skills:['ac'],active:false};
+ const created=await act('owner@example.test',initial);assert.equal(created.status,200);const id=created.data.id;
+ assert.equal((await h.request(initial.email)).data.user.role,'customer');
+ const edited={...initial,id,version:1,name:'Updated sample',email:'edited@example.invalid',skills:['plumbing'],active:true};
+ assert.equal((await act('customer@example.test',edited)).status,403);
+ assert.equal((await act('owner@example.test',edited)).status,200);
+ const state=(await h.request('owner@example.test')).data;assert.equal(state.technicians.length,1);assert.equal(state.technicians[0].id,id);assert.equal(state.technicians[0].email,edited.email);
+ assert.equal((await h.request(edited.email)).data.user.role,'technician');assert.equal((await h.request(initial.email)).data.user.role,'customer');
+ assert.equal((await act('owner@example.test',edited)).status,409);
+ await act('owner@example.test',{name:'Another',email:'another@example.invalid',skills:['ac']});
+ assert.equal((await act('owner@example.test',{...edited,version:2,email:'another@example.invalid'})).status,409);
+ h.DB.raw.close();
+});
 test('transaction stale-version guard rolls back writes and retry receipt',async()=>{
  const db=database();await db.prepare('INSERT INTO settings(id,data,version) VALUES (?,?,?)').bind('business','{}',2).run();
  await assert.rejects(commit(db,{key:'retry',fingerprint:'fingerprint',result:{saved:true},guardSql:'SELECT version = ? FROM settings WHERE id = ?',guardArgs:[1,'business'],statements:[db.prepare('UPDATE settings SET data=? WHERE id=?').bind('changed','business')]}),e=>e.status===409);

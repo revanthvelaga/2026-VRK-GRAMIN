@@ -1,6 +1,6 @@
 {
   "title": "Gramin launch",
-  "updated": "Secure role checks passed; preparing owner-only hosted release",
+  "updated": "Owner-only release published successfully on 16 September 2026. Public customer launch remains pending.",
   "tasks": [
     {
       "id": "prototype",
@@ -42,7 +42,7 @@
       "id": "storage",
       "title": "Hosted storage and database migrations",
       "status": "active",
-      "detail": "Migration generated and tested against SQLite; hosted database activation is next."
+      "detail": "Database migration included in the successful hosted release. Real-account persistence checks remain."
     },
     {
       "id": "operations",
@@ -65,14 +65,20 @@
     {
       "id": "release",
       "title": "Release tests",
-      "status": "pending",
-      "detail": "Check customer and staff workflows on desktop and mobile."
+      "status": "active",
+      "detail": "Seven automated tests passed. Hosted owner/customer/technician and mobile checks remain."
     },
     {
       "id": "deploy",
-      "title": "Deploy and verify the launch",
+      "title": "Publish the owner setup release",
+      "status": "done",
+      "detail": "Hosting confirmed success. Private owner access: https://gramin-home-services.revanthvelaga.chatgpt.site"
+    },
+    {
+      "id": "customer-launch",
+      "title": "Open the app to customers",
       "status": "pending",
-      "detail": "No live release has been published."
+      "detail": "Enter actual business details, finish recovery and real-account checks, then configure customer access."
     }
   ]
 }

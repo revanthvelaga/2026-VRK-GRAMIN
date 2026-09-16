@@ -41,8 +41,9 @@ async function route(request,env,ctx){
  if(action==='technician'){
   if(user.role!=='admin')error('Owner account required',403);const email=text(p.email,'technician email',200).toLowerCase();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))error('Enter a valid email');if(email===env.OWNER_EMAIL?.toLowerCase())error('The owner cannot be added as a technician');
   const name=text(p.name,'technician name',80);if(!Array.isArray(p.skills)||!p.skills.length||p.skills.some(s=>!services.some(x=>x.id===s)))error('Select valid technician skills');
-  const existing=await env.DB.prepare('SELECT id,version FROM technicians WHERE email=?').bind(email).first();if(existing&&p.version!==existing.version)error('Technician changed. Refresh first.',409);
-  const id=existing?.id||crypto.randomUUID();const statement=existing?env.DB.prepare('UPDATE technicians SET name=?,skills=?,active=?,version=version+1 WHERE id=?').bind(name,JSON.stringify(p.skills),p.active===false?0:1,id):env.DB.prepare('INSERT INTO technicians(id,email,name,skills,active,version) VALUES (?,?,?,?,1,1)').bind(id,email,name,JSON.stringify(p.skills));
+  const existing=await env.DB.prepare(p.id?'SELECT id,version FROM technicians WHERE id=?':'SELECT id,version FROM technicians WHERE email=?').bind(p.id||email).first();if(p.id&&!existing)error('Technician not found',404);if(existing&&p.version!==existing.version)error('Technician changed. Refresh first.',409);
+  const duplicate=await env.DB.prepare('SELECT id FROM technicians WHERE email=?').bind(email).first();if(duplicate&&duplicate.id!==existing?.id)error('This email belongs to another technician',409);
+  const id=existing?.id||crypto.randomUUID();const statement=existing?env.DB.prepare('UPDATE technicians SET email=?,name=?,skills=?,active=?,version=version+1 WHERE id=?').bind(email,name,JSON.stringify(p.skills),p.active===false?0:1,id):env.DB.prepare('INSERT INTO technicians(id,email,name,skills,active,version) VALUES (?,?,?,?,?,1)').bind(id,email,name,JSON.stringify(p.skills),p.active===false?0:1);
   return json(await commit(env.DB,{key,fingerprint,result:{saved:true,id},statements:[statement],guardSql:existing?'SELECT version = ? FROM technicians WHERE id = ?':undefined,guardArgs:[existing?.version,id]}));
  }
  const cfg=await settings(env.DB);let booking,current;
