@@ -9,3 +9,4 @@ dist/.openai/
 *.tar.gz
 .env*
 backups/
+dist/database.json

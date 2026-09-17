@@ -1,6 +1,6 @@
 {
   "title": "Gramin launch",
-  "updated": "2026-09-17T02:37:53.437Z — live backup restored, owner/mobile checks passed; customer launch needs input.",
+  "updated": "2026-09-17T14:49:14.243Z — database view moved to local developer page; hosted Owner page removal is being deployed.",
   "tasks": [
     {
       "id": "prototype",
@@ -48,14 +48,14 @@
     {
       "id": "operations",
       "title": "Prepare real booking operations",
-      "status": "active",
+      "status": "pending",
       "detail": "Editable setup and sample staff saved. Business terms and privacy notice still say SAMPLE; real staff email ownership and first-release scope need confirmation.",
       "checkedAt": "2026-09-17T02:37:53.437Z"
     },
     {
       "id": "security",
       "title": "Security and access-isolation checks",
-      "status": "active",
+      "status": "pending",
       "detail": "Server permissions, request limits, same-origin checks, input bounds and security headers tested. Owner-only hosting preserved. Custom provider firewall settings are unavailable through current tools.",
       "checkedAt": "2026-09-17T02:37:53.437Z"
     },
@@ -69,15 +69,15 @@
     {
       "id": "release",
       "title": "Release tests",
-      "status": "active",
+      "status": "pending",
       "detail": "11 automated tests pass. Live owner sign-in and database-health check pass; owner UI has no horizontal overflow at phone width. Customer/technician sign-ins require real accounts and site access.",
       "checkedAt": "2026-09-17T02:37:53.437Z"
     },
     {
       "id": "deploy",
       "title": "Publish the owner setup release",
-      "status": "done",
-      "detail": "Hosting confirmed success. Private owner access: https://gramin-home-services.revanthvelaga.chatgpt.site"
+      "status": "active",
+      "detail": "Publishing the Owner page without database records. Existing site remains private while the replacement deploys."
     },
     {
       "id": "customer-launch",
@@ -93,9 +93,10 @@
     },
     {
       "id": "data-view",
-      "title": "Owner-only hosted database viewer",
-      "status": "active",
-      "detail": "Read-only categories and refresh/pagination built; owner-only tests passed. Deploying for live verification."
+      "title": "Local developer database table viewer",
+      "status": "done",
+      "detail": "Database tables are available at http://127.0.0.1:4173/database.html. The viewer uses an ignored local snapshot and is excluded from the hosted Owner app.",
+      "checkedAt": "2026-09-17T14:49:14.243Z"
     },
     {
       "id": "automatic-backups",

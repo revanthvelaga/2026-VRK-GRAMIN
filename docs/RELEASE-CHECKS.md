@@ -3,7 +3,8 @@
 - Hosted database binding DB and all seven application tables verified using Sites database tools.
 - Owner signed in through the normal ChatGPT flow. Business settings and four technician records remained saved.
 - Hosted database-health button returned Connected.
-- Eleven automated tests cover lifecycle approval, cash receipts, roles, revocation, stale updates, retry handling, backups, restore integrity, request bounds and owner-only read-only data access.
+- Ten automated tests cover lifecycle approval, cash receipts, roles, revocation, stale updates, retry handling, backups, restore integrity and request bounds.
+- Database inspection is a local developer surface at `http://127.0.0.1:4173/database.html`. Its generated snapshot is ignored by Git and excluded from the hosted Worker. The Owner dashboard contains no database table browser.
 - Current hosted data was copied using Sites database reads. The operations table was unchanged before and after the copy, checking that no application writes occurred during the read. Snapshot: one settings row, four technicians, eight operations, zero bookings/events.
 - Restored that snapshot into a new local SQLite file. Integrity passed. No existing or live database was overwritten. Private files are in the ignored backups directory.
 - The application exports an atomic complete snapshot using a D1 batch. Browser download completion was not observable through the browser automation API; the live-data restore above used Sites database reads instead.

@@ -88,19 +88,3 @@ test('security headers and oversized requests are enforced',async()=>{
  const h=harness();const response=await h.request('customer@example.test');assert.match(response.headers.get('content-security-policy'),/object-src 'none'/);assert.equal(response.headers.get('x-content-type-options'),'nosniff');assert.equal(response.headers.get('cache-control'),'no-store');
  const oversized=await h.request('customer@example.test','/api/actions','create',{...booking,issue:'x'.repeat(21000)});assert.equal(oversized.status,413);h.DB.raw.close();
 });
-test('database viewer is read-only, owner-only, paginated and restricts SQL identifiers',async()=>{
- const h=harness();await h.request('owner@example.test','/api/actions','settings',config);
- assert.equal((await h.request(null,'/api/data?table=settings')).status,401);
- assert.equal((await h.request('customer@example.test','/api/data?table=settings')).status,403);
- await h.request('owner@example.test','/api/actions','technician',{name:'Viewer tech',email:'viewer@example.invalid',skills:['ac'],active:true});
- assert.equal((await h.request('viewer@example.invalid','/api/data?table=bookings')).status,403);
- const settings=await h.request('owner@example.test','/api/data?table=settings');assert.equal(settings.status,200);assert.equal(settings.data.rows.length,1);
- assert.equal((await h.request('owner@example.test','/api/data?table=payments')).status,200);
- assert.equal((await h.request('owner@example.test','/api/data?table=sqlite_master')).status,400);
- assert.equal((await h.request('owner@example.test','/api/data?table=settings&offset=-1')).status,400);
- for(let i=0;i<30;i++)await h.DB.prepare('INSERT INTO operations(id,fingerprint,result,created_at) VALUES (?,?,?,?)').bind('view-'+i,'f','{}','2026-01-01').run();
- const first=await h.request('owner@example.test','/api/data?table=operations');assert.equal(first.data.rows.length,25);assert.equal(first.data.hasMore,true);
- const second=await h.request('owner@example.test','/api/data?table=operations&offset=25');assert.equal(second.data.rows.length,7);assert.equal(second.data.hasMore,false);
- assert.equal((await h.request('owner@example.test','/api/data','delete',{})).status,404);
- assert.equal((await h.DB.prepare('SELECT count(*) AS n FROM settings').first()).n,1);h.DB.raw.close();
-});
