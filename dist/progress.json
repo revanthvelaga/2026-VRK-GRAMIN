@@ -1,6 +1,6 @@
 {
   "title": "Gramin launch",
-  "updated": "2026-09-17T02:28:30.633Z — hosted database verified; backup/recovery and release checks underway.",
+  "updated": "2026-09-17T02:37:53.437Z — live backup restored, owner/mobile checks passed; customer launch needs input.",
   "tasks": [
     {
       "id": "prototype",
@@ -42,31 +42,36 @@
       "id": "storage",
       "title": "Hosted storage and database migrations",
       "status": "done",
-      "detail": "Sites confirms DB and all seven tables. Saved owner settings (version 4) and staff records survived deployment and reload."
+      "detail": "Hosted DB and seven tables verified. Saved settings and four staff records persisted across updates and owner sign-in.",
+      "checkedAt": "2026-09-17T02:37:53.437Z"
     },
     {
       "id": "operations",
       "title": "Prepare real booking operations",
       "status": "active",
-      "detail": "Business fields and four technician records saved. Sample terms/privacy need owner review; real customer/staff workflow requires verified accounts."
+      "detail": "Editable setup and sample staff saved. Business terms and privacy notice still say SAMPLE; real staff email ownership and first-release scope need confirmation.",
+      "checkedAt": "2026-09-17T02:37:53.437Z"
     },
     {
       "id": "security",
       "title": "Security and access-isolation checks",
       "status": "active",
-      "detail": "Same-origin writes, role isolation, limits, security headers and stale-write protection tested. Provider firewall settings are not exposed by available hosting tools."
+      "detail": "Server permissions, request limits, same-origin checks, input bounds and security headers tested. Owner-only hosting preserved. Custom provider firewall settings are unavailable through current tools.",
+      "checkedAt": "2026-09-17T02:37:53.437Z"
     },
     {
       "id": "recovery",
-      "title": "Backups and monitoring",
-      "status": "active",
-      "detail": "Complete snapshot and checksum export built. Local restore test passed without overwriting live data. Live backup verification and automatic off-site backup setup remain."
+      "title": "Back up hosted data and verify isolated restore",
+      "status": "done",
+      "detail": "Real hosted snapshot restored locally: 1 settings record, 4 technicians, 8 transaction records, 0 bookings. SQLite integrity passed. Live DB untouched.",
+      "checkedAt": "2026-09-17T02:37:53.437Z"
     },
     {
       "id": "release",
       "title": "Release tests",
       "status": "active",
-      "detail": "Ten automated tests pass. Hosted owner checks underway; real customer/technician sign-ins and mobile verification remain."
+      "detail": "11 automated tests pass. Live owner sign-in and database-health check pass; owner UI has no horizontal overflow at phone width. Customer/technician sign-ins require real accounts and site access.",
+      "checkedAt": "2026-09-17T02:37:53.437Z"
     },
     {
       "id": "deploy",
@@ -85,6 +90,18 @@
       "title": "Editable business and sample technician setup",
       "status": "done",
       "detail": "Business settings, technician email/name/skills/status can be edited. Sample Ravi saved disabled; existing records retained."
+    },
+    {
+      "id": "data-view",
+      "title": "Owner-only hosted database viewer",
+      "status": "active",
+      "detail": "Read-only categories and refresh/pagination built; owner-only tests passed. Deploying for live verification."
+    },
+    {
+      "id": "automatic-backups",
+      "title": "Automatic off-site backups and outage monitoring",
+      "status": "pending",
+      "detail": "Not configured. Requires a hosting/operator backup and alerting service; local restore test does not provide continuous protection."
     }
   ]
 }

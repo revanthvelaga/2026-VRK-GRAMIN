@@ -3,6 +3,7 @@ import {services,defaultSettings,error,text,settingsInput,createBooking,transiti
 import {settings,technicians,getBooking,listBookings,digest,replay,commit,limit} from './storage.mjs';
 import {searchPlaces} from '../backend/places.mjs';
 import {createBackup} from './backup.mjs';
+import {backupColumns} from './backup.mjs';
 const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}});
 async function body(request){if(!request.headers.get('Content-Type')?.includes('application/json'))error('JSON request required',415);const reader=request.body?.getReader();if(!reader)error('Request body is missing');const chunks=[];let size=0;while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>20000){await reader.cancel();error('Request is too large',413);}chunks.push(value);}const bytes=new Uint8Array(size);let offset=0;for(const c of chunks){bytes.set(c,offset);offset+=c.length;}try{const value=JSON.parse(new TextDecoder().decode(bytes));if(!value||Array.isArray(value)||typeof value!=='object')error('Invalid request');return value;}catch{error('Invalid JSON');}}
 async function route(request,env,ctx){
@@ -26,6 +27,15 @@ async function route(request,env,ctx){
  await limit(env.DB,user.actorId,url.pathname==='/api/places'?20:60);
  if(ctx?.waitUntil)ctx.waitUntil(env.DB.prepare('DELETE FROM rate_limits WHERE expires < ?').bind(Date.now()-60000).run().catch(()=>{}));
  if(request.method==='GET'&&url.pathname==='/api/places')return json(await searchPlaces(url.searchParams.get('q')));
+ if(request.method==='GET'&&url.pathname==='/api/data'){
+  if(user.role!=='admin')error('Owner account required',403);
+  const table=url.searchParams.get('table')||'bookings',offset=Number(url.searchParams.get('offset')||0);
+  if(!Number.isSafeInteger(offset)||offset<0)error('Invalid page');
+  const columns=Object.hasOwn(backupColumns,table)?backupColumns[table]:null;if(!columns&&table!=='payments')error('Choose a valid data category');
+  const sql=table==='payments'?"SELECT id,status,json_extract(data,'$.amountDue') AS amount_due,json_extract(data,'$.paymentStatus') AS payment_status,json_extract(data,'$.receipt') AS receipt,json_extract(data,'$.paidAt') AS paid_at FROM bookings ORDER BY created_at DESC LIMIT 26 OFFSET ?":'SELECT '+columns.join(',')+' FROM '+table+' ORDER BY id LIMIT 26 OFFSET ?';
+  const result=await env.DB.prepare(sql).bind(offset).all();
+  return json({table,offset,hasMore:result.results.length>25,rows:result.results.slice(0,25)});
+ }
  if(request.method==='GET'&&url.pathname==='/api/backup'){
   if(user.role!=='admin')error('Owner account required',403);
   const response=json(await createBackup(env.DB));response.headers.set('Content-Disposition','attachment; filename="gramin-backup-'+new Date().toISOString().slice(0,10)+'.json"');return response;
