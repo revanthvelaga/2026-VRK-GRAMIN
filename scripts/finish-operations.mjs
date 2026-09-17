@@ -1,0 +1,9 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+let code=readFileSync('live/app.js','utf8');
+code=code.replace("s.areas.join('\\\\n')","s.areas.join('\\n')");
+code=code.replace('Backups, recovery checks, phone OTP, online payments and SMS/WhatsApp are still pending.','A complete backup download and local restore tool are available. Automatic off-site backups, real-account release checks, phone OTP, online payments and SMS/WhatsApp still require setup.');
+code=code.replace('<p><a class="link" href="/api/export">Download business data</a> · Automated backups and restore verification are still pending.</p>','<section class="card"><h2>Backup and service health</h2><p><a class="link" href="/api/backup">Download complete backup</a> · <a class="link" href="/api/export">Download readable business data</a></p><p>Keep backups private. A complete backup includes bookings, staff permissions and transaction history. Automatic off-site backups are not configured.</p><button type="button" class="quiet" id="check-health">Check database connection</button><p id="health-result" role="status"></p></section>');
+code=code.replace('villageSearch();','villageSearch();const health=document.querySelector("#check-health");if(health)health.onclick=async()=>{const out=document.querySelector("#health-result");out.textContent="Checking…";try{const r=await fetch("/api/health");const data=await r.json();if(!r.ok)throw Error(data.error);out.textContent="Database connected. Checked "+new Date(data.checkedAt).toLocaleString();}catch(e){out.textContent=e.message;}};');
+// Currency inputs accept paise; ETA stays in whole minutes.
+code=code.replace('type="${type}" value=', 'type="${type}" ${type===\'number\'?\'min="0" step="\'+(name===\'eta\'?\'1\':\'0.01\')+\'"\':\'\'} value=');
+writeFileSync('live/app.js',code);

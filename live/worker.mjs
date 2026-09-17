@@ -2,10 +2,12 @@ import {authorize,canRead,sameOrigin} from './auth.mjs';
 import {services,defaultSettings,error,text,settingsInput,createBooking,transition} from './domain.mjs';
 import {settings,technicians,getBooking,listBookings,digest,replay,commit,limit} from './storage.mjs';
 import {searchPlaces} from '../backend/places.mjs';
+import {createBackup} from './backup.mjs';
 const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}});
 async function body(request){if(!request.headers.get('Content-Type')?.includes('application/json'))error('JSON request required',415);const reader=request.body?.getReader();if(!reader)error('Request body is missing');const chunks=[];let size=0;while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>20000){await reader.cancel();error('Request is too large',413);}chunks.push(value);}const bytes=new Uint8Array(size);let offset=0;for(const c of chunks){bytes.set(c,offset);offset+=c.length;}try{const value=JSON.parse(new TextDecoder().decode(bytes));if(!value||Array.isArray(value)||typeof value!=='object')error('Invalid request');return value;}catch{error('Invalid JSON');}}
 async function route(request,env,ctx){
  const url=new URL(request.url);
+ if(url.pathname==='/favicon.ico')return new Response(null,{status:204});
  if(!url.pathname.startsWith('/api/')){
   if(!['GET','HEAD'].includes(request.method))return new Response('Method not allowed',{status:405});
   const asset=env.APP_ASSETS?.[url.pathname==='/'?'/index.html':url.pathname];if(!asset)return new Response('Not found',{status:404});
@@ -24,6 +26,15 @@ async function route(request,env,ctx){
  await limit(env.DB,user.actorId,url.pathname==='/api/places'?20:60);
  if(ctx?.waitUntil)ctx.waitUntil(env.DB.prepare('DELETE FROM rate_limits WHERE expires < ?').bind(Date.now()-60000).run().catch(()=>{}));
  if(request.method==='GET'&&url.pathname==='/api/places')return json(await searchPlaces(url.searchParams.get('q')));
+ if(request.method==='GET'&&url.pathname==='/api/backup'){
+  if(user.role!=='admin')error('Owner account required',403);
+  const response=json(await createBackup(env.DB));response.headers.set('Content-Disposition','attachment; filename="gramin-backup-'+new Date().toISOString().slice(0,10)+'.json"');return response;
+ }
+ if(request.method==='GET'&&url.pathname==='/api/health'){
+  if(user.role!=='admin')error('Owner account required',403);
+  await env.DB.prepare('SELECT id FROM settings LIMIT 1').first();
+  return json({status:'ok',database:'connected',checkedAt:new Date().toISOString()});
+ }
  if(request.method==='GET'&&url.pathname==='/api/export'){
   if(user.role!=='admin')error('Owner account required',403);const cfg=await settings(env.DB);const rows=await env.DB.prepare('SELECT data FROM bookings ORDER BY created_at').all();const events=await env.DB.prepare('SELECT * FROM booking_events ORDER BY created_at').all();const response=json({exportedAt:new Date().toISOString(),settings:cfg.value,technicians:await technicians(env.DB),bookings:rows.results.map(r=>JSON.parse(r.data)),events:events.results});response.headers.set('Content-Disposition','attachment; filename="gramin-backup.json"');return response;
  }

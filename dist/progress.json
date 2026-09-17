@@ -1,6 +1,6 @@
 {
   "title": "Gramin launch",
-  "updated": "Owner-only release published successfully on 16 September 2026. Public customer launch remains pending.",
+  "updated": "2026-09-17T02:28:30.633Z — hosted database verified; backup/recovery and release checks underway.",
   "tasks": [
     {
       "id": "prototype",
@@ -36,37 +36,37 @@
       "id": "accounts",
       "title": "Secure accounts and role permissions",
       "status": "done",
-      "detail": "Hosted sign-in and owner/customer/technician permissions implemented; isolation and revocation tests passed. Hosted sign-in verification remains part of release checks."
+      "detail": "Owner sign-in verified in hosted UI. Customer and technician permissions, revocation and editable accounts pass automated tests; real staff sign-in awaits verified accounts."
     },
     {
       "id": "storage",
       "title": "Hosted storage and database migrations",
-      "status": "active",
-      "detail": "Database migration included in the successful hosted release. Real-account persistence checks remain."
+      "status": "done",
+      "detail": "Sites confirms DB and all seven tables. Saved owner settings (version 4) and staff records survived deployment and reload."
     },
     {
       "id": "operations",
       "title": "Prepare real booking operations",
       "status": "active",
-      "detail": "Real dates, owner setup and cash confirmation implemented. Actual service details and technician accounts still required."
+      "detail": "Business fields and four technician records saved. Sample terms/privacy need owner review; real customer/staff workflow requires verified accounts."
     },
     {
       "id": "security",
       "title": "Security and access-isolation checks",
       "status": "active",
-      "detail": "Role isolation, same-origin writes, transaction guards and retry checks passed. Hosting protections still to verify."
+      "detail": "Same-origin writes, role isolation, limits, security headers and stale-write protection tested. Provider firewall settings are not exposed by available hosting tools."
     },
     {
       "id": "recovery",
       "title": "Backups and monitoring",
-      "status": "pending",
-      "detail": "Recovery and operational checks before real customer use."
+      "status": "active",
+      "detail": "Complete snapshot and checksum export built. Local restore test passed without overwriting live data. Live backup verification and automatic off-site backup setup remain."
     },
     {
       "id": "release",
       "title": "Release tests",
       "status": "active",
-      "detail": "Seven automated tests passed. Hosted owner/customer/technician and mobile checks remain."
+      "detail": "Ten automated tests pass. Hosted owner checks underway; real customer/technician sign-ins and mobile verification remain."
     },
     {
       "id": "deploy",
@@ -78,7 +78,13 @@
       "id": "customer-launch",
       "title": "Open the app to customers",
       "status": "pending",
-      "detail": "Enter actual business details, finish recovery and real-account checks, then configure customer access."
+      "detail": "Owner-only site. Awaiting reviewed business policies, verified staff/customer accounts, and confirmation of initial sign-in/payment/notification scope."
+    },
+    {
+      "id": "editable-setup",
+      "title": "Editable business and sample technician setup",
+      "status": "done",
+      "detail": "Business settings, technician email/name/skills/status can be edited. Sample Ravi saved disabled; existing records retained."
     }
   ]
 }

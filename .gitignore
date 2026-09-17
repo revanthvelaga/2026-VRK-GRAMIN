@@ -8,3 +8,4 @@ dist/.openai/
 .release/
 *.tar.gz
 .env*
+backups/
