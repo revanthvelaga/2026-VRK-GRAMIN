@@ -1,6 +1,6 @@
 {
   "title": "Gramin launch",
-  "updated": "2026-09-17T15:09:00.115Z — sample account, technician approval, test payment, feedback and support flows deployed in private release 6.",
+  "updated": "2026-09-17T15:33:11.651Z — customer checkout now shows cash, UPI test and card test options with payment status and receipts.",
   "tasks": [
     {
       "id": "prototype",
@@ -109,7 +109,7 @@
       "id": "sample-release-features",
       "title": "Sample accounts, payments, feedback and support",
       "status": "done",
-      "detail": "Editable customer profiles, technician applications with Owner approval, cash and sandbox payment status, completed-job ratings, and support tickets are live.",
+      "detail": "Editable customer profiles, technician applications with Owner approval, cash, UPI test and card test payment status with receipts, completed-job ratings, and support tickets are live.",
       "checkedAt": "2026-09-17T15:09:00.115Z"
     }
   ]
