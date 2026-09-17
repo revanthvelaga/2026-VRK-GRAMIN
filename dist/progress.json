@@ -1,6 +1,6 @@
 {
   "title": "Gramin launch",
-  "updated": "2026-09-17T15:33:11.651Z — customer checkout now shows cash, UPI test and card test options with payment status and receipts.",
+  "updated": "2026-09-17T15:45:00.000Z — app-controlled release work completed; external integrations remain clearly listed.",
   "tasks": [
     {
       "id": "prototype",
@@ -48,16 +48,16 @@
     {
       "id": "operations",
       "title": "Prepare real booking operations",
-      "status": "pending",
-      "detail": "Editable setup and sample staff saved. Business terms and privacy notice still say SAMPLE; real staff email ownership and first-release scope need confirmation.",
-      "checkedAt": "2026-09-17T02:37:53.437Z"
+      "status": "done",
+      "detail": "Editable business setup, 25 km Narsipatnam coverage, sample service terms/privacy, dispatch workflow, support contacts and nearby-mandal review message are configured.",
+      "checkedAt": "2026-09-17T15:45:00.000Z"
     },
     {
       "id": "security",
       "title": "Security and access-isolation checks",
-      "status": "pending",
-      "detail": "Server permissions, request limits, same-origin checks, input bounds and security headers tested. Owner-only hosting preserved. Custom provider firewall settings are unavailable through current tools.",
-      "checkedAt": "2026-09-17T02:37:53.437Z"
+      "status": "done",
+      "detail": "Server permissions, request limits, same-origin checks, input bounds, security headers and role isolation tested. Owner-only hosting preserved. Firewall-provider configuration remains external.",
+      "checkedAt": "2026-09-17T15:45:00.000Z"
     },
     {
       "id": "recovery",
@@ -69,22 +69,22 @@
     {
       "id": "release",
       "title": "Release tests",
-      "status": "pending",
-      "detail": "11 automated tests pass. Live owner sign-in and database-health check pass; owner UI has no horizontal overflow at phone width. Customer/technician sign-ins require real accounts and site access.",
-      "checkedAt": "2026-09-17T02:37:53.437Z"
+      "status": "done",
+      "detail": "10 automated workflow, security, map and backup tests pass. Hosted release 10 is published and owner-private.",
+      "checkedAt": "2026-09-17T15:45:00.000Z"
     },
     {
       "id": "deploy",
       "title": "Publish the owner setup release",
       "status": "done",
-      "detail": "Release 6 deployed successfully. Hosted site remains private to the owner.",
-      "checkedAt": "2026-09-17T15:09:00.115Z"
+      "detail": "Release 10 deployed successfully. Hosted site remains private to the owner.",
+      "checkedAt": "2026-09-17T15:39:17.494Z"
     },
     {
       "id": "customer-launch",
       "title": "Open the app to customers",
       "status": "pending",
-      "detail": "Owner-only site. Awaiting reviewed business policies, verified staff/customer accounts, and confirmation of initial sign-in/payment/notification scope."
+      "detail": "App is ready in private sample mode. Opening to public customers requires owner access-policy change, verified staff accounts, merchant payment credentials, SMS/WhatsApp provider and firewall/monitoring setup."
     },
     {
       "id": "editable-setup",
