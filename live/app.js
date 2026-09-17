@@ -23,7 +23,7 @@ function job(b){const role=state.user.role,t=state.technicians.find(x=>x.id===b.
  if(role==='customer'){
  if(['requested','assigned'].includes(b.status))actions+=actionForm(b,'cancel','Cancel request');
  if(b.status==='awaiting_approval')actions+=actionForm(b,'approve','Approve repair')+actionForm(b,'decline','Decline repair');
- if(['completed','declined'].includes(b.status)&&b.paymentStatus==='unpaid')actions+=actionForm(b,'cash','Choose cash payment')+`<form data-action="sandbox_pay" data-booking-id="${esc(b.id)}">${submit('Test payment · no money moves')}</form>`;
+ if(['completed','declined'].includes(b.status)&&b.paymentStatus==='unpaid')actions+=actionForm(b,'cash','Choose cash payment')+`<form data-action="sandbox_pay" data-booking-id="${esc(b.id)}"><label>Test checkout<select name="provider"><option value="upi_test">UPI test checkout</option><option value="card_test">Card test checkout</option></select></label><small>No money moves. This simulates gateway authorization and creates a receipt.</small>${submit('Pay with test gateway')}</form>`;
  if(b.status==='completed')actions+=`<form data-action="rating" data-booking-id="${esc(b.id)}"><label>Rating<select name="rating"><option value="5">5 stars</option><option value="4">4 stars</option><option value="3">3 stars</option><option value="2">2 stars</option><option value="1">1 star</option></select></label>${area('comment','Feedback','Good service')}${submit('Send feedback')}</form>`;
  }
  if(role==='technician'){
