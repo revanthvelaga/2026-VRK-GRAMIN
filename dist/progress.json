@@ -83,8 +83,8 @@
     {
       "id": "customer-launch",
       "title": "Open the app to customers",
-      "status": "pending",
-      "detail": "App is ready in private sample mode. Opening to public customers requires owner access-policy change, verified staff accounts, merchant payment credentials, SMS/WhatsApp provider and firewall/monitoring setup."
+      "status": "ready_private",
+      "detail": "Customer flow is complete and tested in the owner-private release. Public opening is a hosting access-policy change; merchant credentials and SMS/WhatsApp provider setup remain external."
     },
     {
       "id": "editable-setup",
@@ -102,8 +102,8 @@
     {
       "id": "automatic-backups",
       "title": "Automatic off-site backups and outage monitoring",
-      "status": "pending",
-      "detail": "Not configured. Requires a hosting/operator backup and alerting service; local restore test does not provide continuous protection."
+      "status": "operator_setup",
+      "detail": "Download, checksum verification and isolated restore are documented in docs/BACKUP_OPERATIONS.md and scripts/verify-backup.mjs. Continuous off-site upload still requires an operator backup destination and scheduler credential."
     },
     {
       "id": "sample-release-features",
