@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DatabaseSync} from 'node:sqlite';
-import {readFileSync,mkdtempSync} from 'node:fs';
+import {readFileSync,readdirSync,mkdtempSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {restoreBackup} from '../scripts/restore-backup.mjs';
@@ -9,7 +9,7 @@ import worker from '../live/worker.mjs';
 import {commit} from '../live/storage.mjs';
 
 function database(){
- const raw=new DatabaseSync(':memory:');raw.exec(readFileSync(new URL('../drizzle/0000_wakeful_corsair.sql',import.meta.url),'utf8'));
+ const raw=new DatabaseSync(':memory:');const migrations=new URL('../drizzle/',import.meta.url);for(const name of readdirSync(migrations).filter(n=>n.endsWith('.sql')).sort())raw.exec(readFileSync(new URL(name,migrations),'utf8'));
  const prepare=sql=>{let args=[];return {bind(...values){args=values;return this;},async first(){return raw.prepare(sql).get(...args)||null;},async all(){return {results:raw.prepare(sql).all(...args)};},async run(){return /^SELECT /i.test(sql)?{results:raw.prepare(sql).all(...args)}:raw.prepare(sql).run(...args);}};};
  return {raw,prepare,async batch(statements){raw.exec('BEGIN');try{const out=[];for(const s of statements)out.push(await s.run());raw.exec('COMMIT');return out;}catch(e){raw.exec('ROLLBACK');throw e;}}};
 }

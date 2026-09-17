@@ -1,6 +1,6 @@
 {
   "title": "Gramin launch",
-  "updated": "2026-09-17T14:49:14.243Z — database view moved to local developer page; hosted Owner page removal is being deployed.",
+  "updated": "2026-09-17T14:52:29.340Z — database tables moved to local developer page; hosted Owner page removal deployed successfully.",
   "tasks": [
     {
       "id": "prototype",
@@ -76,8 +76,8 @@
     {
       "id": "deploy",
       "title": "Publish the owner setup release",
-      "status": "active",
-      "detail": "Publishing the Owner page without database records. Existing site remains private while the replacement deploys."
+      "status": "done",
+      "detail": "Owner page without database tables deployed successfully. Hosted site remains private to the owner."
     },
     {
       "id": "customer-launch",

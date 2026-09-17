@@ -7,10 +7,15 @@ export const backupColumns={
  bookings:['id','customer_id','technician_id','status','data','version','created_at'],
  booking_events:['id','booking_id','actor_id','action','created_at'],
  operations:['id','fingerprint','result','created_at']
+ ,profiles:['user_id','email','role','data','created_at','updated_at']
+ ,technician_applications:['id','user_id','email','name','skills','status','created_at','updated_at']
+ ,support_tickets:['id','user_id','subject','message','status','created_at','updated_at']
+ ,ratings:['id','booking_id','customer_id','rating','comment','created_at']
+ ,payments:['id','booking_id','customer_id','provider','status','amount','reference','created_at']
 };
 export async function createBackup(db){
  const names=Object.keys(backupColumns);
- const results=await db.batch(names.map(name=>db.prepare('SELECT '+backupColumns[name].join(',')+' FROM '+name+' ORDER BY id')));
+ const results=await db.batch(names.map(name=>db.prepare('SELECT '+backupColumns[name].join(',')+' FROM '+name+' ORDER BY '+backupColumns[name][0])));
  const tables=Object.fromEntries(names.map((name,i)=>[name,results[i].results]));
  return {format:'gramin-backup',formatVersion:1,createdAt:new Date().toISOString(),tables,sha256:await digest(JSON.stringify(tables))};
 }

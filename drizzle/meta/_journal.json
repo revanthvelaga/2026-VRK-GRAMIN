@@ -8,6 +8,13 @@
       "when": 1789569294602,
       "tag": "0000_wakeful_corsair",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1789654800000,
+      "tag": "0001_sample_accounts_payments_support",
+      "breakpoints": true
     }
   ]
 }

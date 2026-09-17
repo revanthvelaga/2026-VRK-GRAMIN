@@ -3,6 +3,7 @@ import {services,defaultSettings,error,text,settingsInput,createBooking,transiti
 import {settings,technicians,getBooking,listBookings,digest,replay,commit,limit} from './storage.mjs';
 import {searchPlaces} from '../backend/places.mjs';
 import {createBackup} from './backup.mjs';
+import {extras,profileInput,validSkills} from './extended.mjs';
 const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}});
 async function body(request){if(!request.headers.get('Content-Type')?.includes('application/json'))error('JSON request required',415);const reader=request.body?.getReader();if(!reader)error('Request body is missing');const chunks=[];let size=0;while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>20000){await reader.cancel();error('Request is too large',413);}chunks.push(value);}const bytes=new Uint8Array(size);let offset=0;for(const c of chunks){bytes.set(c,offset);offset+=c.length;}try{const value=JSON.parse(new TextDecoder().decode(bytes));if(!value||Array.isArray(value)||typeof value!=='object')error('Invalid request');return value;}catch{error('Invalid JSON');}}
 async function route(request,env,ctx){
@@ -18,9 +19,9 @@ async function route(request,env,ctx){
  const user=await authorize(request,env);
  if(request.method==='GET'&&url.pathname==='/api/state'){
   const cfg=await settings(env.DB);if(!user)return json({user:null,services,settings:cfg.value,settingsVersion:cfg.version,bookings:[],technicians:[]});
-  const [jobs,staff]=await Promise.all([listBookings(env.DB,user),technicians(env.DB)]);
+  const [jobs,staff,more]=await Promise.all([listBookings(env.DB,user),technicians(env.DB),extras(env.DB,user)]);
   const visibleStaff=user.role==='admin'?staff:staff.filter(t=>user.role==='technician'?t.id===user.id:jobs.some(b=>b.technicianId===t.id)).map(({id,name,skills,active})=>({id,name,skills,active}));
-  return json({user:{id:user.id,role:user.role,email:user.email,name:user.name||''},services,settings:cfg.value,settingsVersion:cfg.version,bookings:jobs,technicians:visibleStaff,auth:'Sign in with ChatGPT',paymentMode:'cash',notifications:'in-app'});
+  return json({user:{id:user.id,role:user.role,email:user.email,name:user.name||''},services,settings:cfg.value,settingsVersion:cfg.version,bookings:jobs,technicians:visibleStaff,...more,auth:'Sign in with ChatGPT',paymentMode:'cash and test gateway',notifications:'in-app'});
  }
  if(!user)error('Sign in to continue',401);
  await limit(env.DB,user.actorId,url.pathname==='/api/places'?20:60);
@@ -44,6 +45,32 @@ async function route(request,env,ctx){
  const key=user.actorId+':'+retry,fingerprint=await digest(JSON.stringify({action,input:p}));
  const old=await replay(env.DB,key,fingerprint);if(old){if(old.customerId){const current=await getBooking(env.DB,old.id);if(!current||!canRead(user,current.value))error('Booking not found',404);}return json(old);}
  const now=new Date().toISOString();
+ if(action==='profile'){
+  const data=profileInput(p),existing=await env.DB.prepare('SELECT user_id FROM profiles WHERE user_id=?').bind(user.actorId).first();
+  const statement=existing?env.DB.prepare('UPDATE profiles SET data=?,updated_at=? WHERE user_id=?').bind(JSON.stringify(data),now,user.actorId):env.DB.prepare('INSERT INTO profiles(user_id,email,role,data,created_at,updated_at) VALUES (?,?,?,?,?,?)').bind(user.actorId,user.email,user.role,JSON.stringify(data),now,now);
+  return json(await commit(env.DB,{key,fingerprint,result:{saved:true},statements:[statement]}));
+ }
+ if(action==='technician_apply'){
+  if(user.role!=='customer')error('Customer account required',403);const skills=validSkills(p.skills),name=text(p.name,'your name',80);const existing=await env.DB.prepare('SELECT id,status FROM technician_applications WHERE user_id=?').bind(user.actorId).first();if(existing&&existing.status==='approved')error('Your technician account is already approved',409);
+  const statement=existing?env.DB.prepare('UPDATE technician_applications SET name=?,skills=?,status=?,updated_at=? WHERE id=?').bind(name,JSON.stringify(skills),'pending',now,existing.id):env.DB.prepare('INSERT INTO technician_applications(id,user_id,email,name,skills,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)').bind(crypto.randomUUID(),user.actorId,user.email,name,JSON.stringify(skills),'pending',now,now);
+  return json(await commit(env.DB,{key,fingerprint,result:{submitted:true},statements:[statement]}));
+ }
+ if(action==='application_approve'){
+  if(user.role!=='admin')error('Owner account required',403);const application=await env.DB.prepare('SELECT * FROM technician_applications WHERE id=?').bind(p.id||'').first();if(!application||application.status!=='pending')error('Pending application not found',404);if(await env.DB.prepare('SELECT id FROM technicians WHERE email=?').bind(application.email).first())error('This applicant already has a technician account',409);const technicianId=crypto.randomUUID();const statements=[env.DB.prepare('INSERT INTO technicians(id,email,name,skills,active,version) VALUES (?,?,?,?,1,1)').bind(technicianId,application.email,application.name,application.skills),env.DB.prepare('UPDATE technician_applications SET status=?,updated_at=? WHERE id=?').bind('approved',now,application.id)];
+  return json(await commit(env.DB,{key,fingerprint,result:{approved:true,technicianId},statements}));
+ }
+ if(action==='ticket'){
+  const subject=text(p.subject,'support subject',120),message=text(p.message,'support message',1200),id='SUP-'+crypto.randomUUID();const statement=env.DB.prepare('INSERT INTO support_tickets(id,user_id,subject,message,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?)').bind(id,user.actorId,subject,message,'open',now,now);return json(await commit(env.DB,{key,fingerprint,result:{id,status:'open'},statements:[statement]}));
+ }
+ if(action==='ticket_status'){
+  if(user.role!=='admin')error('Owner account required',403);if(!['open','in_progress','resolved'].includes(p.status))error('Choose a valid ticket status');const statement=env.DB.prepare('UPDATE support_tickets SET status=?,updated_at=? WHERE id=?').bind(p.status,now,p.id||'');return json(await commit(env.DB,{key,fingerprint,result:{saved:true},statements:[statement]}));
+ }
+ if(action==='rating'){
+  const booking=await getBooking(env.DB,p.bookingId||'');if(!booking||booking.value.customerId!==user.id||booking.value.status!=='completed')error('Completed booking not found',404);if(!Number.isInteger(p.rating)||p.rating<1||p.rating>5)error('Choose 1 to 5 stars');const statement=env.DB.prepare('INSERT INTO ratings(id,booking_id,customer_id,rating,comment,created_at) VALUES (?,?,?,?,?,?)').bind('RATE-'+crypto.randomUUID(),booking.value.id,user.id,p.rating,text(p.comment||'No comment','feedback',500),now);return json(await commit(env.DB,{key,fingerprint,result:{saved:true},statements:[statement]}));
+ }
+ if(action==='sandbox_pay'){
+  const booking=await getBooking(env.DB,p.bookingId||'');if(!booking||booking.value.customerId!==user.id||!['completed','declined'].includes(booking.value.status)||booking.value.paymentStatus==='paid')error('Eligible unpaid booking not found',404);const amount=booking.value.amountDue;if(!Number.isFinite(amount)||amount<0)error('Payment amount unavailable');const reference='TEST-'+crypto.randomUUID().slice(0,12).toUpperCase();const updated={...booking.value,paymentStatus:'paid',receipt:reference,paidAt:now,paymentProvider:'test_gateway',updatedAt:now};const statements=[env.DB.prepare('UPDATE bookings SET status=?,data=?,version=version+1 WHERE id=?').bind(updated.status,JSON.stringify(updated),updated.id),env.DB.prepare('INSERT INTO payments(id,booking_id,customer_id,provider,status,amount,reference,created_at) VALUES (?,?,?,?,?,?,?,?)').bind('PAY-'+crypto.randomUUID(),updated.id,user.id,'test_gateway','paid',amount,reference,now)];return json(await commit(env.DB,{key,fingerprint,result:{...updated,version:booking.version+1},statements,guardSql:'SELECT version = ? FROM bookings WHERE id = ?',guardArgs:[booking.version,updated.id]}));
+ }
  if(action==='settings'){
   if(user.role!=='admin')error('Owner account required',403);const cfg=await settings(env.DB);if(p.version!==cfg.version)error('Settings changed. Refresh first.',409);const value=settingsInput(p);
   const statement=cfg.version?env.DB.prepare('UPDATE settings SET data=?,version=version+1 WHERE id=?').bind(JSON.stringify(value),'business'):env.DB.prepare('INSERT INTO settings(id,data,version) VALUES (?,?,1)').bind('business',JSON.stringify(value));
