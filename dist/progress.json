@@ -1,6 +1,6 @@
 {
   "title": "Gramin launch",
-  "updated": "2026-09-18T15:05:00.000Z — local and hosted builds compared; release 14 source parity verified and 11 tests pass.",
+  "updated": "2026-09-18T15:42:00.000Z — durable local sessions/profiles, customer-to-Admin request flow, premium interface and three-stage branch workflow verified.",
   "tasks": [
     {
       "id": "prototype",
@@ -118,6 +118,13 @@
       "status": "done",
       "detail": "Owner can enter customer or selected-technician test views and return to Admin. Server-controlled HttpOnly sessions expire after 30 minutes and start/stop events are audited.",
       "checkedAt": "2026-09-18T14:50:00.000Z"
+    },
+    {
+      "id": "local-account-onboarding",
+      "title": "Local email/mobile login and onboarding",
+      "status": "done",
+      "detail": "Email/mobile login, restart-safe sessions, saved Customer profiles, booking-to-Admin routing, pending Technician approval, Owner-only Admin creation and direct role switching pass isolated API and browser tests. Existing local bookings and settings were retained.",
+      "checkedAt": "2026-09-18T15:42:00.000Z"
     }
   ]
 }

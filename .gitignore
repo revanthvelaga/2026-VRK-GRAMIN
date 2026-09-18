@@ -10,3 +10,4 @@ dist/.openai/
 .env*
 backups/
 dist/database.json
+.idea/

@@ -12,6 +12,12 @@ node server.mjs
 
 Open http://127.0.0.1:4173. The server listens on loopback only. English is the default; Telugu is available for the main customer journey. Use sample data only.
 
+The local preview opens on an email/mobile login screen. You can create a Customer account or submit a Technician application; Technician access remains pending until an Owner approves it. Customer profiles and signed-in sessions persist across local server restarts, and saved profile details fill new service requests. Public signup cannot create an Admin. Use `demo-admin`, `demo-customer`, or `demo-tech-1` with password `123456` for the sample workspaces. The Owner workspace includes a dropdown that routes directly among Admin, Customer, and Technician test views.
+
+Verified progress is visible at http://127.0.0.1:4173/progress.html.
+
+Local branches follow `development` → `sit` → `main`; `main` is the production/deployment branch. See [Branching workflow](docs/BRANCHING.md).
+
 ## Review the complete journey
 
 1. Customer: select a service and submit a sample request.

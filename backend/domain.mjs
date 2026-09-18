@@ -33,7 +33,7 @@ export function apply(state,user,action,input={},key){
   const customer=()=>{if(user.role!=='customer'||b.customerId!==user.id)fail('Customer approval required',403);};
   const tech=()=>{if(user.role!=='technician'||b.technicianId!==user.id)fail('Assigned technician required',403);};
   switch(action){
-   case 'assign':admin();requireStatus('requested','assigned');if(!technicians.some(t=>t.id===input.technicianId&&t.skills.includes(b.service)))fail('Choose a technician with the right service skills');b.technicianId=input.technicianId;b.status='assigned';break;
+   case 'assign':admin();requireStatus('requested','assigned');if(![...technicians,...(state.technicians||[])].some(t=>t.id===input.technicianId&&t.active!==false&&t.skills.includes(b.service)))fail('Choose a technician with the right service skills');b.technicianId=input.technicianId;b.status='assigned';break;
    case 'depart':tech();requireStatus('assigned');if(!Number.isFinite(input.eta)||input.eta<5||input.eta>240)fail('ETA must be 5–240 minutes');b.status='en_route';b.eta=input.eta;break;
    case 'arrive':tech();requireStatus('en_route');b.status='inspecting';delete b.eta;break;
    case 'estimate':tech();requireStatus('inspecting');for(const f of ['labor','parts'])if(!Number.isFinite(input[f])||input[f]<0||input[f]>100000)fail('Invalid '+f+' amount');if(typeof input.description!=='string'||!input.description.trim()||input.description.length>500)fail('Describe the proposed repair');b.estimate={labor:input.labor,parts:input.parts,description:input.description.trim(),total:b.fees.visit+b.fees.travel+input.labor+input.parts};b.status='awaiting_approval';break;

@@ -9,6 +9,10 @@ The local prototype and village search are implemented and tested. The live busi
 - [x] Add and test live village suggestions including G.Koduru
 - [x] Produce illustrated architecture and launch requirements
 - [x] Create the requested logo and add it to the prototype header
+- [x] Add and test local email/mobile login, Customer signup, pending Technician onboarding, Owner approval and Owner-only Admin creation
+- [x] Route the local Owner workspace directly among Admin, Customer and Technician views
+- [x] Persist local account sessions and Customer profiles across server restarts; verify new requests appear in Admin
+- [x] Apply and verify the premium dark interface on desktop and phone widths
 - [ ] Replace demo identities with production sign-in and role permissions
 - [ ] Move booking data into hosted durable storage
 - [ ] Configure real business coverage, staff, fees and support details

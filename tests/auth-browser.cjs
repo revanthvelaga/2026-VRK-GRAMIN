@@ -1,0 +1,85 @@
+const {chromium}=require('C:/Users/chant/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const assert=require('node:assert/strict');
+
+(async()=>{
+ const base=process.env.GRAMIN_TEST_URL||'http://127.0.0.1:4174';
+ const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
+ const page=await browser.newPage({viewport:{width:1280,height:900}}),errors=[];
+ page.on('pageerror',error=>errors.push(error.message));
+ await page.goto(base,{waitUntil:'networkidle'});
+ await page.getByRole('heading',{name:'Welcome back'}).waitFor();
+
+ await page.getByRole('button',{name:'Sign up'}).click();
+ await page.getByLabel('Full name').fill('UI Customer');
+ await page.getByLabel('Email or mobile').fill('ui.customer@example.test');
+ await page.getByLabel('Create password').fill('secret5');
+ await page.getByRole('button',{name:'Create account'}).click();
+ await page.getByRole('heading',{name:'A little help. Right at home.'}).waitFor();
+ const profile=page.locator('#profile-form');
+ await profile.getByLabel('Mobile number').fill('9876543210');
+ await profile.getByLabel('Village / neighbourhood').fill('G.Koduru');
+ await profile.getByLabel('PIN code').fill('531113');
+ await profile.getByLabel('Landmark & directions').fill('Temple road');
+ await profile.getByRole('button',{name:'Save my details'}).click();
+ await page.getByText('Saved',{exact:true}).waitFor();
+ await page.locator('[data-service="ac"]').click();
+ const bookingForm=page.locator('#booking-form');
+ assert.equal(await bookingForm.locator('[name="name"]').inputValue(),'UI Customer');
+ assert.equal(await bookingForm.locator('[name="phone"]').inputValue(),'9876543210');
+ assert.equal(await bookingForm.locator('[name="village"]').inputValue(),'G.Koduru');
+ await bookingForm.locator('[name="issue"]').fill('AC is not cooling');
+ await page.getByRole('button',{name:'Continue to visit details'}).click();
+ await page.locator('[name="consent"]').check();
+ await page.getByRole('button',{name:'Send demo request'}).click();
+ await page.getByRole('heading',{name:'Awaiting assignment'}).waitFor();
+ await page.getByRole('button',{name:'Log out'}).click();
+ await page.getByRole('heading',{name:'Welcome back'}).waitFor();
+
+ await page.getByRole('button',{name:'Sign up'}).click();
+ await page.getByLabel('Full name').fill('UI Technician');
+ await page.getByLabel('Email or mobile').fill('ui.technician@example.test');
+ await page.getByLabel('Create password').fill('secret6');
+ await page.getByLabel('Join as').selectOption('technician');
+ await page.getByLabel('AC repair').check();
+ await page.getByRole('button',{name:'Create account'}).click();
+ await page.getByRole('heading',{name:'Thanks, UI Technician.'}).waitFor();
+ await page.getByRole('button',{name:'Log out'}).click();
+ await page.getByRole('heading',{name:'Welcome back'}).waitFor();
+
+ await page.getByLabel('Email or mobile').fill('demo-admin');
+ await page.getByLabel('Password').fill('123456');
+ await page.locator('#login-form').getByRole('button',{name:'Log in',exact:true}).click();
+ await page.getByRole('heading',{name:'Every village. Every visit.'}).waitFor();
+ await page.locator('[data-open]').first().click();
+ await page.getByRole('heading',{name:'UI Customer'}).first().waitFor();
+ await page.locator('[data-approve-technician]').click();
+ await page.getByText('No applications are waiting.').waitFor();
+ const adminForm=page.locator('#create-admin-form');
+ await adminForm.getByLabel('Name').fill('UI Admin');
+ await adminForm.getByLabel('Email or mobile').fill('ui.admin@example.test');
+ await adminForm.getByLabel('Temporary password').fill('secret7');
+ await adminForm.getByRole('button',{name:'Create Admin'}).click();
+ await page.locator('#create-admin-form small').filter({hasText:'1 locally created Admin account.'}).waitFor();
+
+ const role=page.locator('#role-switch');
+ assert.deepEqual(await role.locator('option').allTextContents(),['Admin','Customer','Technician']);
+ await role.selectOption('customer');
+ await page.getByRole('heading',{name:'A little help. Right at home.'}).waitFor();
+ await page.locator('#role-switch').selectOption('technician');
+ await page.getByRole('heading',{name:'Your next visit, made clear.'}).waitFor();
+ await page.locator('#role-switch').selectOption('admin');
+ await page.getByRole('heading',{name:'Every village. Every visit.'}).waitFor();
+ await page.getByRole('button',{name:'Log out'}).click();
+ await page.getByRole('heading',{name:'Welcome back'}).waitFor();
+
+ await page.getByLabel('Email or mobile').fill('ui.technician@example.test');
+ await page.getByLabel('Password').fill('secret6');
+ await page.locator('#login-form').getByRole('button',{name:'Log in',exact:true}).click();
+ await page.getByRole('heading',{name:'Your next visit, made clear.'}).waitFor();
+ assert.equal(await page.locator('#technician').count(),0);
+ await page.setViewportSize({width:390,height:844});
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+ assert.deepEqual(errors,[]);
+ console.log('PASS: browser login, saved customer profile, booking to Admin queue, technician onboarding/approval, Owner-only Admin creation, direct role routing, and mobile layout.');
+ await browser.close();
+})().catch(error=>{console.error(error);process.exit(1);});
