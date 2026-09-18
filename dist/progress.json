@@ -83,8 +83,8 @@
     {
       "id": "customer-launch",
       "title": "Open the app to customers",
-      "status": "ready_private",
-      "detail": "Customer flow is complete and tested in the owner-private release. Public opening is a hosting access-policy change; merchant credentials and SMS/WhatsApp provider setup remain external."
+      "status": "public_ready",
+      "detail": "Public hosting access is enabled. Secure sign-in, role isolation and customer sample safety remain enforced; merchant credentials and SMS/WhatsApp provider setup remain external."
     },
     {
       "id": "editable-setup",
@@ -103,7 +103,7 @@
       "id": "automatic-backups",
       "title": "Automatic off-site backups and outage monitoring",
       "status": "operator_setup",
-      "detail": "Download, checksum verification and isolated restore are documented in docs/BACKUP_OPERATIONS.md and scripts/verify-backup.mjs. Continuous off-site upload still requires an operator backup destination and scheduler credential."
+      "detail": "Scheduled download, checksum verification and isolated restore are implemented in scripts/scheduled-backup.ps1 and docs/BACKUP_OPERATIONS.md. Only the operator's bearer token and encrypted/off-site destination remain to be supplied."
     },
     {
       "id": "sample-release-features",

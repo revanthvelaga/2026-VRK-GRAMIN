@@ -14,4 +14,4 @@ The verifier checks the format, table shape, types, and checksum without connect
 node scripts/restore-backup.mjs path/to/gramin-backup.json path/to/restored.sqlite
 ```
 
-For continuous protection, schedule the Owner download and verifier on an operator machine or backup service. The current hosting tools do not provide a customer-managed off-site destination or scheduler credential, so no unattended upload is claimed by the app.
+For continuous protection, schedule `scripts/scheduled-backup.ps1` with Windows Task Scheduler (for example, daily). Set `GRAMIN_SIWC_BEARER_TOKEN` to the owner Sites token and choose a synced or encrypted off-site destination for `backups/scheduled`. The script downloads, verifies and timestamps each backup; the destination credential and storage account are the only external handoff.
