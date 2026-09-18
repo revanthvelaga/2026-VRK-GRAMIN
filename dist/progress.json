@@ -1,6 +1,6 @@
 {
   "title": "Gramin launch",
-  "updated": "2026-09-18T14:50:00.000Z — Owner-only audited customer and technician test views added and verified.",
+  "updated": "2026-09-18T15:05:00.000Z — local and hosted builds compared; release 14 source parity verified and 11 tests pass.",
   "tasks": [
     {
       "id": "prototype",
@@ -77,8 +77,8 @@
       "id": "deploy",
       "title": "Publish the owner setup release",
       "status": "done",
-      "detail": "Release 10 deployed successfully. Hosted site remains private to the owner.",
-      "checkedAt": "2026-09-17T15:39:17.494Z"
+      "detail": "Release 14 deployed successfully from commit def60960da437caf68743eb634c57763d49d82e1. Local and hosted source packages match; public hosting is enabled with app-level role protection.",
+      "checkedAt": "2026-09-18T14:47:12.902Z"
     },
     {
       "id": "customer-launch",
