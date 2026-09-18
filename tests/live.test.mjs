@@ -66,6 +66,16 @@ test('owner edits technician identity without duplication and disabled samples c
  assert.equal((await act('owner@example.test',{...edited,version:2,email:'another@example.invalid'})).status,409);
  h.DB.raw.close();
 });
+test('only the owner can start audited customer and technician preview sessions and return to Admin',async()=>{
+ const h=harness(),act=(email,action,input,extra={})=>h.request(email,'/api/actions',action,input,extra);
+ const staff=await act('owner@example.test','technician',{name:'Preview tech',email:'preview-tech@example.test',skills:['ac']});assert.equal(staff.status,200);
+ assert.equal((await act('customer@example.test','preview_start',{role:'customer'})).status,403);
+ const customerStart=await act('owner@example.test','preview_start',{role:'customer'});assert.equal(customerStart.status,200);const customerCookie=customerStart.headers.get('set-cookie').split(';')[0];
+ const customerState=await h.request('owner@example.test','/api/state',null,{}, {Cookie:customerCookie});assert.equal(customerState.data.user.role,'customer');assert.equal(customerState.data.user.preview.role,'customer');
+ const stop=await act('owner@example.test','preview_stop',{}, {Cookie:customerCookie});assert.equal(stop.status,200);const clearedCookie=stop.headers.get('set-cookie').split(';')[0];assert.equal((await h.request('owner@example.test','/api/state',null,{}, {Cookie:clearedCookie})).data.user.role,'admin');
+ const techStart=await act('owner@example.test','preview_start',{role:'technician',technicianId:staff.data.id});const techCookie=techStart.headers.get('set-cookie').split(';')[0];const techState=await h.request('owner@example.test','/api/state',null,{}, {Cookie:techCookie});assert.equal(techState.data.user.role,'technician');assert.equal(techState.data.user.id,staff.data.id);assert.equal(h.DB.raw.prepare('SELECT count(*) AS n FROM preview_events').get().n,3);
+ h.DB.raw.close();
+});
 test('transaction stale-version guard rolls back writes and retry receipt',async()=>{
  const db=database();await db.prepare('INSERT INTO settings(id,data,version) VALUES (?,?,?)').bind('business','{}',2).run();
  await assert.rejects(commit(db,{key:'retry',fingerprint:'fingerprint',result:{saved:true},guardSql:'SELECT version = ? FROM settings WHERE id = ?',guardArgs:[1,'business'],statements:[db.prepare('UPDATE settings SET data=? WHERE id=?').bind('changed','business')]}),e=>e.status===409);

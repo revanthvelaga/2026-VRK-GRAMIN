@@ -12,6 +12,8 @@ export const backupColumns={
  ,support_tickets:['id','user_id','subject','message','status','created_at','updated_at']
  ,ratings:['id','booking_id','customer_id','rating','comment','created_at']
  ,payments:['id','booking_id','customer_id','provider','status','amount','reference','created_at']
+ ,preview_sessions:['token','owner_id','role','subject_id','expires_at','created_at']
+ ,preview_events:['id','owner_id','action','role','subject_id','created_at']
 };
 export async function createBackup(db){
  const names=Object.keys(backupColumns);

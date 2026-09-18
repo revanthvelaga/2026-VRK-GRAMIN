@@ -1,6 +1,6 @@
 {
   "title": "Gramin launch",
-  "updated": "2026-09-17T15:45:00.000Z — app-controlled release work completed; external integrations remain clearly listed.",
+  "updated": "2026-09-18T14:50:00.000Z — Owner-only audited customer and technician test views added and verified.",
   "tasks": [
     {
       "id": "prototype",
@@ -111,6 +111,13 @@
       "status": "done",
       "detail": "Editable customer profiles, technician applications with Owner approval, cash, UPI test and card test payment status with receipts, completed-job ratings, and support tickets are live.",
       "checkedAt": "2026-09-17T15:09:00.115Z"
+    },
+    {
+      "id": "owner-role-preview",
+      "title": "Owner test role switcher",
+      "status": "done",
+      "detail": "Owner can enter customer or selected-technician test views and return to Admin. Server-controlled HttpOnly sessions expire after 30 minutes and start/stop events are audited.",
+      "checkedAt": "2026-09-18T14:50:00.000Z"
     }
   ]
 }

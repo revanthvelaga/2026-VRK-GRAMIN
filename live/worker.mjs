@@ -21,7 +21,7 @@ async function route(request,env,ctx){
   const cfg=await settings(env.DB);if(!user)return json({user:null,services,settings:cfg.value,settingsVersion:cfg.version,bookings:[],technicians:[]});
   const [jobs,staff,more]=await Promise.all([listBookings(env.DB,user),technicians(env.DB),extras(env.DB,user)]);
   const visibleStaff=user.role==='admin'?staff:staff.filter(t=>user.role==='technician'?t.id===user.id:jobs.some(b=>b.technicianId===t.id)).map(({id,name,skills,active})=>({id,name,skills,active}));
- return json({user:{id:user.id,role:user.role,email:user.email,name:user.name||''},services,settings:cfg.value,settingsVersion:cfg.version,bookings:jobs,technicians:visibleStaff,...more,auth:'Sign in with ChatGPT',paymentMode:'cash, UPI test and card test',notifications:'in-app status placeholders'});
+  return json({user:{id:user.id,role:user.role,email:user.email,name:user.name||'',isOwner:!!user.isOwner,preview:user.preview||null},services,settings:cfg.value,settingsVersion:cfg.version,bookings:jobs,technicians:visibleStaff,...more,auth:'Sign in with ChatGPT',paymentMode:'cash, UPI test and card test',notifications:'in-app status placeholders'});
  }
  if(!user)error('Sign in to continue',401);
  await limit(env.DB,user.actorId,url.pathname==='/api/places'?20:60);
@@ -40,11 +40,16 @@ async function route(request,env,ctx){
   if(user.role!=='admin')error('Owner account required',403);const cfg=await settings(env.DB);const rows=await env.DB.prepare('SELECT data FROM bookings ORDER BY created_at').all();const events=await env.DB.prepare('SELECT * FROM booking_events ORDER BY created_at').all();const response=json({exportedAt:new Date().toISOString(),settings:cfg.value,technicians:await technicians(env.DB),bookings:rows.results.map(r=>JSON.parse(r.data)),events:events.results});response.headers.set('Content-Disposition','attachment; filename="gramin-backup.json"');return response;
  }
  if(request.method!=='POST'||url.pathname!=='/api/actions')error('Route not found',404);
- const {action,input:p}=await body(request);if(typeof action!=='string'||!p||typeof p!=='object'||Array.isArray(p))error('Invalid request');
+ const {action,input:p}=await body(request);if(typeof action!=='string'||!p||typeof p!=='object'||Array.isArray(p))error('Invalid request');const now=new Date().toISOString();
+ if(action==='preview_start'){
+  if(!user.isOwner||user.preview)error('Return to Admin before starting a test view',403);if(!['customer','technician'].includes(p.role))error('Choose a test role');let subjectId=null;if(p.role==='technician'){const tech=await env.DB.prepare('SELECT id FROM technicians WHERE id=? AND active=1').bind(p.technicianId||'').first();if(!tech)error('Choose an active technician');subjectId=tech.id;}const token=crypto.randomUUID(),expires=Date.now()+30*60*1000;await env.DB.batch([env.DB.prepare('INSERT INTO preview_sessions(token,owner_id,role,subject_id,expires_at,created_at) VALUES (?,?,?,?,?,?)').bind(token,user.actorId,p.role,subjectId,expires,now),env.DB.prepare('INSERT INTO preview_events(id,owner_id,action,role,subject_id,created_at) VALUES (?,?,?,?,?,?)').bind(crypto.randomUUID(),user.actorId,'start',p.role,subjectId,now)]);const response=json({previewStarted:true,role:p.role,expiresAt:expires});response.headers.set('Set-Cookie','gramin_preview='+token+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=1800');return response;
+ }
+ if(action==='preview_stop'){
+  if(!user.isOwner)error('Owner account required',403);const token=request.headers.get('Cookie')?.match(/(?:^|;\s*)gramin_preview=([^;]+)/)?.[1];if(token)await env.DB.batch([env.DB.prepare('DELETE FROM preview_sessions WHERE token=? AND owner_id=?').bind(token,user.actorId),env.DB.prepare('INSERT INTO preview_events(id,owner_id,action,role,subject_id,created_at) VALUES (?,?,?,?,?,?)').bind(crypto.randomUUID(),user.actorId,'stop',user.preview?.role||null,user.preview?.technicianId||null,now)]);const response=json({previewStopped:true});response.headers.set('Set-Cookie','gramin_preview=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0');return response;
+ }
  const retry=request.headers.get('Idempotency-Key');if(!retry||!/^[a-zA-Z0-9_-]{8,100}$/.test(retry))error('Valid retry key required');
  const key=user.actorId+':'+retry,fingerprint=await digest(JSON.stringify({action,input:p}));
  const old=await replay(env.DB,key,fingerprint);if(old){if(old.customerId){const current=await getBooking(env.DB,old.id);if(!current||!canRead(user,current.value))error('Booking not found',404);}return json(old);}
- const now=new Date().toISOString();
  if(action==='profile'){
   const data=profileInput(p),existing=await env.DB.prepare('SELECT user_id FROM profiles WHERE user_id=?').bind(user.actorId).first();
   const statement=existing?env.DB.prepare('UPDATE profiles SET data=?,updated_at=? WHERE user_id=?').bind(JSON.stringify(data),now,user.actorId):env.DB.prepare('INSERT INTO profiles(user_id,email,role,data,created_at,updated_at) VALUES (?,?,?,?,?,?)').bind(user.actorId,user.email,user.role,JSON.stringify(data),now,now);
