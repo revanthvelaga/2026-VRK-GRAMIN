@@ -4,9 +4,10 @@ const assert=require('node:assert/strict');
 (async()=>{
  const base=process.env.GRAMIN_TEST_URL||'http://127.0.0.1:4174';
  const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
- const context=await browser.newContext({viewport:{width:1280,height:900},geolocation:{latitude:17.69,longitude:82.61},permissions:['geolocation']});
+ const context=await browser.newContext({viewport:{width:1280,height:900}});
  const page=await context.newPage(),errors=[];
  page.on('pageerror',error=>errors.push(error.message));
+ await page.route('**/api/places?*',route=>{const url=new URL(route.request().url());if(url.searchParams.get('q')==='Narsipatnam')return route.fulfill({contentType:'application/json',body:JSON.stringify({places:[{id:'test-location',name:'Narsipatnam',label:'Narsipatnam, Andhra Pradesh, India',latitude:17.67,longitude:82.62}],source:'test'})});return route.continue();});
  await page.goto(base,{waitUntil:'networkidle'});
  await page.getByRole('heading',{name:'Welcome back'}).waitFor();
 
@@ -17,6 +18,10 @@ const assert=require('node:assert/strict');
  await page.getByRole('button',{name:'Create account'}).click();
  await page.getByRole('heading',{name:'A little help. Right at home.'}).waitFor();
  await page.locator('#change-location').waitFor();
+ assert.match(await page.locator('#change-location').textContent(),/Select your location/);
+ await page.locator('#change-location').click();
+ await page.locator('#location-query').fill('Narsipatnam');
+ await page.locator('.location-result').click();
  await page.getByRole('button',{name:/Nearby villages/}).waitFor();
  assert.equal(await page.locator('#profile-form').count(),0);
  await page.locator('[data-service="ac"]').click();
