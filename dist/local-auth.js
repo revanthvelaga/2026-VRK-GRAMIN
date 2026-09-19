@@ -29,7 +29,7 @@
   const response=await fetch('/api/state',{headers:authHeaders()}),output=await response.json();
   if(!response.ok){if(response.status===401)forget();throw Error(output.error||'Unable to load your account');}
   data=output;
-  if(localUser&&output.user?.accountId===localUser.accountId){localUser={...localUser,name:output.user.name,login:output.user.login,status:output.user.status,technicianId:output.user.technicianId,profile:output.user.profile||{}};localStorage.setItem('gramin-local-user',JSON.stringify(localUser));if(localUser.role==='customer'){draft={name:localUser.name,...localUser.profile,...draft};}}
+  if(localUser&&output.user?.accountId===localUser.accountId){localUser={...localUser,name:output.user.name,login:output.user.login,status:output.user.status,technicianId:output.user.technicianId,profile:output.user.profile||{}};localStorage.setItem('gramin-local-user',JSON.stringify(localUser));if(localUser.role==='customer'){draft={name:localUser.name,phone:localUser.profile.phone||'',...draft};}}
  };
  act=async(action,input)=>{
   if(busy)return;busy=true;document.querySelectorAll('button[type=submit],button[data-action]').forEach(button=>button.disabled=true);
@@ -100,7 +100,6 @@
   if(localUser.role!=='admin')role=localUser.role;else if(!['admin','customer','technician'].includes(role))role='admin';
   baseRender();accountNav();
   if(localUser.role==='admin'&&role==='admin'){app.insertAdjacentHTML('afterbegin',accountPanel());bindAccountPanel();}
-  if(localUser.role==='customer'&&role==='customer'){app.insertAdjacentHTML('afterbegin',customerProfilePanel());bindCustomerProfile();}
   if(role==='technician')enhanceTechnicianIdentity();
  };
 
