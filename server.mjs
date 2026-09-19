@@ -78,6 +78,14 @@ http.createServer(async(req,res)=>{try{
    const approved=await transact(next=>{const applicant=next.users?.[body.userId];if(!applicant||applicant.role!=='technician'||applicant.status!=='pending')fail('Pending technician application not found',404);next.technicians||=[];const technicianId='local-tech-'+crypto.randomUUID();const technician={id:technicianId,name:applicant.name,skills:applicant.skills,active:true};next.technicians.push(technician);applicant.status='active';applicant.technicianId=technicianId;applicant.approvedAt=new Date().toISOString();applicant.approvedBy=account.id;return {applicant,technician};});
    return send(res,{user:publicAccount(approved.applicant),technician:approved.technician,message:'Technician approved'});
   }
+  if(req.method==='POST'&&url.pathname==='/api/auth/technicians'){
+   if(account.role!=='admin'||(requestedView&&requestedView!=='admin'))fail('Owner access required',403);
+   const body=await readBody(req),name=validateName(body.name),login=normalizeLogin(body.login),password=validatePassword(body.password);
+   const skills=Array.isArray(body.skills)?[...new Set(body.skills)].filter(id=>services.some(service=>service.id===id)):[];
+   if(!skills.length)fail('Select at least one service skill');
+   const created=await transact(next=>{next.users||={};next.technicians||=[];if(Object.values(next.users).some(user=>user.login===login)||demoAccounts[login])fail('An account already exists for this email or mobile',409);const id='local-'+crypto.randomUUID(),technicianId='local-tech-'+crypto.randomUUID(),createdAt=new Date().toISOString();next.users[id]={id,login,name,role:'technician',status:'active',skills,technicianId,password:hashPassword(password),createdAt,createdBy:account.id};next.technicians.push({id:technicianId,name,skills,active:true});return next.users[id];});
+   return send(res,{user:publicAccount(created),message:'Technician added'});
+  }
   if(req.method==='POST'&&url.pathname==='/api/auth/profile'){
    if(!account.id.startsWith('local-'))fail('Create a personal account to save profile details',403);
    const body=await readBody(req),name=validateName(body.name),phone=String(body.phone||'').replace(/\D/g,''),village=String(body.village||'').trim(),pin=String(body.pin||'').trim(),landmark=String(body.landmark||'').trim();
