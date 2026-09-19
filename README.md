@@ -1,4 +1,4 @@
-# Gramin
+# 2026-VRK-GRAMIN · Gramin
 
 Reviewable rural home-services app prototype with customer, technician and owner views.
 
