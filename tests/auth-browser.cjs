@@ -4,7 +4,8 @@ const assert=require('node:assert/strict');
 (async()=>{
  const base=process.env.GRAMIN_TEST_URL||'http://127.0.0.1:4174';
  const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
- const page=await browser.newPage({viewport:{width:1280,height:900}}),errors=[];
+ const context=await browser.newContext({viewport:{width:1280,height:900},geolocation:{latitude:17.69,longitude:82.61},permissions:['geolocation']});
+ const page=await context.newPage(),errors=[];
  page.on('pageerror',error=>errors.push(error.message));
  await page.goto(base,{waitUntil:'networkidle'});
  await page.getByRole('heading',{name:'Welcome back'}).waitFor();
@@ -15,6 +16,8 @@ const assert=require('node:assert/strict');
  await page.getByLabel('Create password').fill('secret5');
  await page.getByRole('button',{name:'Create account'}).click();
  await page.getByRole('heading',{name:'A little help. Right at home.'}).waitFor();
+ await page.locator('#change-location').waitFor();
+ await page.getByRole('button',{name:/Nearby villages/}).waitFor();
  assert.equal(await page.locator('#profile-form').count(),0);
  await page.locator('[data-service="ac"]').click();
  const bookingForm=page.locator('#booking-form');

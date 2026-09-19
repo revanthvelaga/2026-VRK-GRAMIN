@@ -93,7 +93,7 @@ http.createServer(async(req,res)=>{try{
    const id=req.headers['x-local-technician-id'];if(!availableTechnicians.some(item=>item.id===id&&item.active!==false))fail('Choose a valid technician test identity');
    user={...user,id,role:'technician',technicianId:id,ownerTest:true};
   }
-  if(req.method==='GET'&&url.pathname==='/api/places')return send(res,await searchPlaces(url.searchParams.get('q')));
+  if(req.method==='GET'&&url.pathname==='/api/places'){const latitude=Number(url.searchParams.get('lat')),longitude=Number(url.searchParams.get('lon'));const center=Number.isFinite(latitude)&&Number.isFinite(longitude)&&Math.abs(latitude)<=90&&Math.abs(longitude)<=180?{latitude,longitude}:null;return send(res,await searchPlaces(url.searchParams.get('q'),center));}
   if(req.method==='GET'&&url.pathname==='/api/state')return send(res,{user,services,technicians:availableTechnicians,settings:state.settings,bookings:user.status==='active'?state.bookings.filter(booking=>scope(user,booking)):[],accounts:user.role==='admin'?Object.values(state.users||{}).map(publicAccount):undefined});
   if(req.method==='POST'&&url.pathname==='/api/actions'){
    if(user.status!=='active')fail('Your technician application is awaiting Owner approval',403);
@@ -102,6 +102,6 @@ http.createServer(async(req,res)=>{try{
   fail('API route not found',404);
  }
  if(!['GET','HEAD'].includes(req.method)){res.writeHead(405);return res.end();}
- const file=path.resolve(root,'.'+decodeURIComponent(url.pathname==='/'?'/index.html':url.pathname));if(!file.startsWith(root+path.sep)){res.writeHead(403);return res.end();}let data=await readFile(file);if(path.basename(file)==='index.html')data=Buffer.concat([data,Buffer.from('<script src="/local-auth.js"></script><script src="/address-book.js"></script>')]);res.setHeader('Content-Type',({'html':'text/html; charset=utf-8','css':'text/css; charset=utf-8','js':'text/javascript; charset=utf-8'})[file.split('.').pop()]||'application/octet-stream');res.end(req.method==='HEAD'?undefined:data);
+ const file=path.resolve(root,'.'+decodeURIComponent(url.pathname==='/'?'/index.html':url.pathname));if(!file.startsWith(root+path.sep)){res.writeHead(403);return res.end();}let data=await readFile(file);if(path.basename(file)==='index.html')data=Buffer.concat([data,Buffer.from('<script src="/local-auth.js"></script><script src="/location.js"></script><script src="/address-book.js"></script>')]);res.setHeader('Content-Type',({'html':'text/html; charset=utf-8','css':'text/css; charset=utf-8','js':'text/javascript; charset=utf-8'})[file.split('.').pop()]||'application/octet-stream');res.end(req.method==='HEAD'?undefined:data);
 }catch(error){send(res,{error:error.status?error.message:'Request could not be completed'},error.status||(error.code==='ENOENT'?404:500));}
 }).listen(port,'127.0.0.1',()=>console.log(`Gramin local preview: http://127.0.0.1:${port}`));
