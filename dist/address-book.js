@@ -16,7 +16,14 @@
   const picker=document.querySelector('#saved-address');
   if(picker)picker.onchange=()=>{
    const address=addresses.find(item=>item.id===picker.value);
-   if(!address)return;
+   if(!address){
+    for(const name of ['phone','village','pin','landmark']){const input=form.elements[name];if(input)input.value='';}
+    form.elements.addressLabel.value='Home';
+    form.elements.saveAddress.checked=true;
+    draft.saveAddress=true;
+    form.dispatchEvent(new Event('input',{bubbles:true}));
+    return;
+   }
    for(const name of ['name','phone','village','pin','landmark']){const input=form.elements[name];if(input)input.value=address[name]||'';}
    form.elements.addressLabel.value=address.label||'Saved address';
    form.elements.saveAddress.checked=false;
