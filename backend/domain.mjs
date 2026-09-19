@@ -1,6 +1,6 @@
 export const services=[{id:'ac',en:'AC repair',te:'ఏసీ రిపేర్',detail:'Cooling, leaks & servicing',icon:'❄'},{id:'plumbing',en:'Plumbing',te:'ప్లంబింగ్',detail:'Taps, pipes & water leaks',icon:'♧'},{id:'electrical',en:'Electrical work',te:'ఎలక్ట్రికల్ పనులు',detail:'Wiring, switches & fixtures',icon:'ϟ'},{id:'washing',en:'Washing machine',te:'వాషింగ్ మెషీన్',detail:'Drainage, spin & repairs',icon:'▣'}];
 export const technicians=[{id:'tech-1',name:'Ravi Kumar',skills:['ac','washing']},{id:'tech-2',name:'Suresh',skills:['plumbing','electrical']}];
-export const initialState=()=>({bookings:[],keys:{},events:{},settings:{brand:'Gramin',areas:['Narsipatnam — sample area','Nearby village — confirm coverage'],visitFee:149,travelFee:50,radius:15}});
+export const initialState=()=>({bookings:[],keys:{},events:{},settings:{brand:'Gramin',areas:['Narsipatnam — sample area','Nearby village — confirm coverage'],visitFee:149,travelFee:50,radius:15,branches:[{id:'narsipatnam',name:'Narsipatnam branch',latitude:17.667,longitude:82.612}]}});
 export function fail(message,status=400){throw Object.assign(new Error(message),{status});}
 export function scope(user,b){return user.role==='admin'||user.role==='customer'&&b.customerId===user.id||user.role==='technician'&&b.technicianId===user.id;}
 export function apply(state,user,action,input={},key){
@@ -26,7 +26,8 @@ export function apply(state,user,action,input={},key){
   admin();if(typeof input.brand!=='string'||!input.brand.trim()||input.brand.length>40)fail('Enter a brand name under 40 characters');
   for(const field of ['visitFee','travelFee','radius'])if(!Number.isFinite(input[field])||input[field]<0||input[field]>100000)fail('Invalid '+field);
   if(!Array.isArray(input.areas)||!input.areas.length||input.areas.length>50||input.areas.some(a=>typeof a!=='string'||!a.trim()||a.length>100))fail('Enter sample coverage areas');
-  state.settings={brand:input.brand.trim(),visitFee:input.visitFee,travelFee:input.travelFee,radius:input.radius,areas:input.areas};b=state.settings;
+  const branches=Array.isArray(input.branches)?input.branches:(state.settings.branches||[{id:'narsipatnam',name:'Narsipatnam branch',latitude:17.667,longitude:82.612}]);if(!branches.length||branches.length>20||branches.some(x=>typeof x?.id!=='string'||!x.id||x.id.length>50||typeof x.name!=='string'||!x.name.trim()||x.name.length>80||!Number.isFinite(x.latitude)||Math.abs(x.latitude)>90||!Number.isFinite(x.longitude)||Math.abs(x.longitude)>180))fail('Add at least one valid branch');
+  state.settings={brand:input.brand.trim(),visitFee:input.visitFee,travelFee:input.travelFee,radius:input.radius,areas:input.areas,branches:branches.map(x=>({id:x.id,name:x.name.trim(),latitude:x.latitude,longitude:x.longitude}))};b=state.settings;
  }else{
   b=state.bookings.find(x=>x.id===input.id);if(!b||!scope(user,b))fail('Booking not found',404);
   const requireStatus=(...statuses)=>{if(!statuses.includes(b.status))fail('This booking has changed. Refresh and try again.',409);};
