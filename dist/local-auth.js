@@ -72,7 +72,7 @@
   nav.innerHTML=`<div class="account-nav">${ownerSwitch}${ownerTools}<span class="account-name"><strong>${esc(localUser.name||localUser.login)}</strong><small>${esc(localUser.login)}</small></span><button class="quiet" id="tickets-nav">${role==='technician'?'My Tickets':'Tickets'}</button><button class="quiet" id="logout">Log out</button></div>`;
   const switcher=document.querySelector('#role-switch');if(switcher)switcher.onchange=async event=>{role=event.target.value;sessionStorage.setItem('gramin-preview-role',role);selected=null;view='home';try{await load();render();}catch(error){role='admin';sessionStorage.setItem('gramin-preview-role','admin');await load();render();toast(error.message);}};
   const tickets=document.querySelector('#tickets-nav');if(tickets)tickets.onclick=()=>{view='tickets';render();};
-  const tools=document.querySelector('#owner-tools');if(tools)tools.onchange=()=>{const action=tools.value;if(!action)return;if(action==='tickets'||action==='assign'){view='tickets';render();return;}role='admin';view='home';render();setTimeout(()=>document.querySelector(action==='branches'?'.branch-admin':action==='admins'?'#create-admin-form':action==='technicians'?'[data-approve-technician]':'#settings-form')?.scrollIntoView({behavior:'smooth',block:'center'}),0);};
+  const tools=document.querySelector('#owner-tools');if(tools)tools.onchange=()=>{const action=tools.value;if(!action)return;role='admin';view=action==='tickets'||action==='assign'?'tickets':'owner-'+action;render();};
   document.querySelector('#logout').onclick=async()=>{try{await request('/api/auth/logout',{});}catch{}forget();authMode='login';render();};
  }
  function accountPanel(){

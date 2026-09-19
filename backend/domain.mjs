@@ -43,6 +43,7 @@ export function apply(state,user,action,input={},key){
    case 'start':tech();requireStatus('approved');b.status='repairing';break;
    case 'complete':tech();requireStatus('repairing');if(typeof input.notes!=='string'||!input.notes.trim()||input.notes.length>1000)fail('Add completion notes');b.notes=input.notes.trim();b.status='completed';b.amountDue=b.estimate.total;break;
    case 'cancel':customer();requireStatus('requested','assigned');b.status='cancelled';b.amountDue=0;break;
+   case 'close':admin();if(['completed','cancelled','declined'].includes(b.status))fail('This ticket is already closed',409);b.status='cancelled';b.amountDue=0;b.closedBy='admin';break;
    case 'pay':customer();requireStatus('completed','declined');if(b.paymentStatus==='paid')fail('Already paid',409);if(!['demo_upi','cash'].includes(input.method))fail('Select a demo payment method');if(input.outcome==='failed'){b.paymentStatus='failed';break;}b.paymentStatus=input.method==='cash'?'cash_pending':'paid';b.paymentMethod=input.method;if(b.paymentStatus==='paid')b.receipt='DEMO-'+crypto.randomUUID().slice(0,8);break;
    case 'cash_received':tech();requireStatus('completed','declined');if(b.paymentStatus!=='cash_pending')fail('No cash payment is pending',409);b.paymentStatus='paid';b.receipt='DEMO-CASH-'+crypto.randomUUID().slice(0,8);break;
    case 'rate':customer();requireStatus('completed');if(!Number.isInteger(input.rating)||input.rating<1||input.rating>5)fail('Choose 1–5 stars');b.rating=input.rating;break;
