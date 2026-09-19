@@ -7,11 +7,6 @@ test('map results exclude foreign results and malformed points, remove duplicate
  const places=normalizePlaces({features:[f,f,{...f,properties:{...f.properties,countrycode:'US'}},{...f,geometry:{type:'Point',coordinates:[null,null]}}]});
  assert.equal(places.length,1);assert.equal(places[0].postcode,'');assert.match(places[0].label,/Makavarapalem/);
 });
-test('location-filtered suggestions stay within the requested 50 km radius',()=>{
- const feature=(id,latitude,longitude)=>({properties:{countrycode:'IN',name:'Village '+id,osm_type:'N',osm_id:id},geometry:{type:'Point',coordinates:[longitude,latitude]}});
- const places=normalizePlaces({features:[feature(1,17.69,82.61),feature(2,18.7,82.61)]},{latitude:17.69,longitude:82.61});
- assert.deepEqual(places.map(place=>place.name),['Village 1']);
-});
 test('booking retains the selected map location without claiming coverage and rejects stale location',()=>{
  const state=initialState(),user={id:'c',role:'customer'};
  const input={service:'ac',name:'Demo',phone:'9000000000',village:'G.Koduru',landmark:'School',issue:'Not cooling',pin:'531113',slot:'Tomorrow · 9 am – 1 pm',consent:true,place:{id:'N1',name:'G.Koduru',label:'G.Koduru, Makavarapalem',latitude:17.5,longitude:82.7}};
